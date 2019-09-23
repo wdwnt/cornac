@@ -1,6 +1,7 @@
 require('dotenv').config();
 const sql = require('mssql');
-var os = require("os");
+const os = require("os");
+const fetch = require("node-fetch");
 
 var express = require('express');
 var app = express();
@@ -37,6 +38,9 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         resp.json(result);
     } else if (action === 'park.hours') {
         var result = await processParkHoursRequest(parameters.park, parameters.date);
+        resp.json(result);
+    } else if (action === 'blog.latest_posts') {
+        var result = await processLatestHeadlinesRequest();
         resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
@@ -87,6 +91,17 @@ async function processParkHoursRequest(park_key, date) {
         .replace("  ", " ");
 
     return buildResponse(`${park.Name} is open today from ${parkHours}.`);
+}
+
+async function processLatestHeadlinesRequest() {
+    let request = await fetch('https://fastpass.wdwnt.com/posts');
+    let responseJson = await request.json();
+
+    var test = responseJson.slice(0, 3)
+        .map(p => p.title)
+        .join(". ");
+
+    return buildResponse(test);
 }
 
 function buildResponse(fulfillmentText) {
