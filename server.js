@@ -97,11 +97,11 @@ async function processLatestHeadlinesRequest() {
     let request = await fetch('https://fastpass.wdwnt.com/posts');
     let responseJson = await request.json();
 
-    var test = responseJson.slice(0, 3)
+    var headlines = responseJson.slice(0, 3)
         .map(p => p.title)
         .join(". ");
 
-    return buildResponse(test);
+    return buildResponse(headlines);
 }
 
 function buildResponse(fulfillmentText) {
