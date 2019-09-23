@@ -1,0 +1,10 @@
+{
+    "name": "cornac",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "dotenv": "^8.1.0",
+        "express": "^4.16.4",
+        "mssql": "^5.1.0"
+    }
+}
