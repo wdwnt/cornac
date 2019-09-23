@@ -35,16 +35,19 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
     if (action === 'attraction.wait') {
         var result = await processWaitTimeRequest(parameters.attraction);
         resp.json(result);
+    } else if (action === 'park.hours') {
+        var result = await processParkHoursRequest(parameters.park, parameters.date);
+        resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
     }
 });
 
-async function processWaitTimeRequest(natural_language_key) {
+async function processWaitTimeRequest(attraction_key) {
     const pool = new sql.ConnectionPool(db_config);
     await pool.connect();
 
-    const result = await pool.query(`select * from AttractionInfos where LanguageProcessingKey = '${natural_language_key}'`);
+    const result = await pool.query(`select * from AttractionInfos where LanguageProcessingKey = '${attraction_key}'`);
     pool.close();
 
     if (result.recordset.length == 0) {
@@ -62,6 +65,28 @@ async function processWaitTimeRequest(natural_language_key) {
     }
 
     return buildResponse(fulfillmentText);
+}
+
+async function processParkHoursRequest(park_key, date) {
+    const pool = new sql.ConnectionPool(db_config);
+    await pool.connect();
+
+    const result = await pool.query(`select * from ParkInfos where Abbreviation = '${park_key}'`);
+    pool.close();
+
+    if (result.recordset.length == 0) {
+        return buildResponse("Sorry! We couldn't find hours for that park!");
+    }
+
+    const park = result.recordset[0];
+    var parkHours = park.TodaysHours
+        .replace("<br />", "")
+        .replace("EMH:", "extra magic hours from")
+        .replace("EMH", "extra magic hours from")
+        .replace("+ Special Event", "with a special event")
+        .replace("  ", " ");
+
+    return buildResponse(`${park.Name} is open today from ${parkHours}.`);
 }
 
 function buildResponse(fulfillmentText) {
