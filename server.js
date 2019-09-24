@@ -42,6 +42,9 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
     } else if (action === 'blog.latest_posts') {
         var result = await processLatestHeadlinesRequest();
         resp.json(result);
+    } else if (action === 'podcast.listen') {
+        var result = await processLatestPodcastRequest();
+        resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
     }
@@ -63,8 +66,7 @@ async function processWaitTimeRequest(attraction_key) {
 
     if (attraction.CurrentStatus.includes('Temporary')) {
         fulfillmentText = `${attraction.Name} is experiencing a temporary closure.`
-    }
-    else if (attraction.CurrentStatus.includes('Posted')) {
+    } else if (attraction.CurrentStatus.includes('Posted')) {
         fulfillmentText = `The current wait time for ${attraction.Name} is ${attraction.WaitTime} minutes.`
     }
 
@@ -101,7 +103,18 @@ async function processLatestHeadlinesRequest() {
         .map(p => p.title)
         .join(". ");
 
-    return buildResponse(headlines);
+    var text = `Here are the latest headlines! ${headlines}`;
+
+    return buildResponse(text);
+}
+
+async function processLatestPodcastRequest() {
+    let request = await fetch('https://fastpass.wdwnt.com/podcasts?noplayer');
+    let responseJson = await request.json();
+
+    var text = `Here is the latest podcast episode! ${responseJson[0].title}.`;
+
+    return buildResponse(text);
 }
 
 function buildResponse(fulfillmentText) {
