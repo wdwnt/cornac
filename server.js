@@ -123,32 +123,36 @@ function buildResponse(fulfillmentText) {
 
 function buildMediaResponse(podcast) {
     return {
-        expectUserResponse: false,
-        finalResponse: {
-            richResponse: {
-                items: [
-                    {
-                        simpleResponse: {
-                            textToSpeech: podcast.title
-                        }
-                    },
-                    {
-                        mediaResponse: {
-                            mediaType: "AUDIO",
-                            mediaObjects: [
-                                {
-                                    name: podcast.title,
-                                    contentUrl: podcast.media_url,
-                                    description: podcast.title,
-                                    icon: {
-                                        url: podcast.featured_image,
-                                        accessibilityText: podcast.title
-                                    }
+        payload: {
+            google: {
+                expectUserResponse: false,
+                finalResponse: {
+                    richResponse: {
+                        items: [
+                            {
+                                simpleResponse: {
+                                    textToSpeech: podcast.title
                                 }
-                            ]
-                        }
+                            },
+                            {
+                                mediaResponse: {
+                                    mediaType: "AUDIO",
+                                    mediaObjects: [
+                                        {
+                                            name: podcast.title,
+                                            contentUrl: podcast.media_url,
+                                            description: podcast.title,
+                                            icon: {
+                                                url: podcast.featured_image,
+                                                accessibilityText: podcast.title
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
                     }
-                ]
+                }
             }
         }
     };
