@@ -112,14 +112,46 @@ async function processLatestPodcastRequest() {
     let request = await fetch('https://fastpass.wdwnt.com/podcasts?noplayer');
     let responseJson = await request.json();
 
-    var text = `Here is the latest podcast episode! ${responseJson[0].title}.`;
-
-    return buildResponse(text);
+    return buildMediaResponse(responseJson[0]);
 }
 
 function buildResponse(fulfillmentText) {
     return {
         fulfillment_text: fulfillmentText
+    };
+}
+
+function buildMediaResponse(podcast) {
+    return {
+        "payload": {
+            "google": {
+                "richResponse": {
+                    "items": [
+                        {
+                            "simpleResponse": {
+                                "textToSpeech": podcast.title
+                            }
+                        },
+                        {
+                            "mediaResponse": {
+                                "mediaType": "AUDIO",
+                                "mediaObjects": [
+                                    {
+                                        "name": podcast.title,
+                                        "contentUrl": podcast.media_url,
+                                        "description": podcast.title,
+                                        "icon": {
+                                            "url": podcast.featured_image,
+                                            "accessibilityText": podcast.title
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
     };
 }
 
