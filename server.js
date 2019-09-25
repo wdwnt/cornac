@@ -54,7 +54,7 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         var result = await processLatestPodcastRequest();
         resp.json(result);
     } else if (action === NTUNES_LISTEN) {
-        var result = await processNTunesListenRequest();
+        var result = processNTunesListenRequest();
         resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
@@ -126,7 +126,7 @@ async function processLatestPodcastRequest() {
     return buildMediaResponse(responseJson[0]);
 }
 
-async function processNTunesListenRequest() {
+function processNTunesListenRequest() {
     let ntunesInfo = {
         title: 'WDWNTunes',
         content: 'Broadcasting magic, music and mayhem',
