@@ -3,6 +3,8 @@ const sql = require('mssql');
 const os = require("os");
 const fetch = require("node-fetch");
 
+const parser = require("node-html-parser");
+
 var express = require('express');
 var app = express();
 app.use(express.json());
@@ -23,6 +25,12 @@ const db_config = {
     }
 };
 
+const ATTRACTION_WAIT = 'attraction.wait';
+const PARK_HOURS = 'park.hours';
+const BLOG_LATEST_POSTS = 'blog.latest_posts';
+const PODCAST_LISTEN = 'podcast.listen';
+const NTUNES_LISTEN = 'ntunes.listen';
+
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -33,17 +41,20 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
     var action = req.body.queryResult.action;
     var parameters = req.body.queryResult.parameters;
 
-    if (action === 'attraction.wait') {
+    if (action === ATTRACTION_WAIT) {
         var result = await processWaitTimeRequest(parameters.attraction);
         resp.json(result);
-    } else if (action === 'park.hours') {
+    } else if (action === PARK_HOURS) {
         var result = await processParkHoursRequest(parameters.park, parameters.date);
         resp.json(result);
-    } else if (action === 'blog.latest_posts') {
+    } else if (action === BLOG_LATEST_POSTS) {
         var result = await processLatestHeadlinesRequest();
         resp.json(result);
-    } else if (action === 'podcast.listen') {
+    } else if (action === PODCAST_LISTEN) {
         var result = await processLatestPodcastRequest();
+        resp.json(result);
+    } else if (action === NTUNES_LISTEN) {
+        var result = await processNTunesListenRequest();
         resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
@@ -115,6 +126,17 @@ async function processLatestPodcastRequest() {
     return buildMediaResponse(responseJson[0]);
 }
 
+async function processNTunesListenRequest() {
+    let ntunesInfo = {
+        title: 'WDWNTunes',
+        content: 'Broadcasting magic, music and mayhem',
+        media_url: 'http://edge1-b.exa.live365.net/a31769',
+        featured_image: 'https://wdwnt.com/wp-content/uploads/2017/11/WDWNTunes_v3_600.png'
+    };
+
+    return buildMediaResponse(ntunesInfo);
+}
+
 function buildResponse(fulfillmentText) {
     return {
         fulfillment_text: fulfillmentText
@@ -122,6 +144,8 @@ function buildResponse(fulfillmentText) {
 }
 
 function buildMediaResponse(podcast) {
+    let description = parser.parse(podcast.content);
+
     return {
         payload: {
             google: {
@@ -140,7 +164,7 @@ function buildMediaResponse(podcast) {
                                     {
                                         name: podcast.title,
                                         contentUrl: podcast.media_url,
-                                        description: podcast.title,
+                                        description: description.text,
                                         icon: {
                                             url: podcast.featured_image,
                                             accessibilityText: podcast.title
