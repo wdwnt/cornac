@@ -30,6 +30,7 @@ const PARK_HOURS = 'park.hours';
 const BLOG_LATEST_POSTS = 'blog.latest_posts';
 const PODCAST_LISTEN = 'podcast.listen';
 const NTUNES_LISTEN = 'ntunes.listen';
+const DESTINATION_WEATHER = 'destination.weather';
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -55,6 +56,9 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         resp.json(result);
     } else if (action === NTUNES_LISTEN) {
         var result = processNTunesListenRequest();
+        resp.json(result);
+    } else if (action === DESTINATION_WEATHER) {
+        var result = await processWeatherRequest(parameters.destination);
         resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
@@ -107,10 +111,9 @@ async function processParkHoursRequest(park_key, date) {
 }
 
 async function processLatestHeadlinesRequest() {
-    let request = await fetch('https://fastpass.wdwnt.com/posts');
-    let responseJson = await request.json();
+    let json = await downloadJson('https://fastpass.wdwnt.com/posts');
 
-    var headlines = responseJson.slice(0, 3)
+    var headlines = json.slice(0, 3)
         .map(p => p.title)
         .join(". ");
 
@@ -120,10 +123,9 @@ async function processLatestHeadlinesRequest() {
 }
 
 async function processLatestPodcastRequest() {
-    let request = await fetch('https://fastpass.wdwnt.com/podcasts?noplayer');
-    let responseJson = await request.json();
+    let json = await downloadJson('https://fastpass.wdwnt.com/podcasts?noplayer');
 
-    return buildMediaResponse(responseJson[0]);
+    return buildMediaResponse(json[0]);
 }
 
 function processNTunesListenRequest() {
@@ -137,14 +139,25 @@ function processNTunesListenRequest() {
     return buildMediaResponse(ntunesInfo);
 }
 
+async function processWeatherRequest(destination) {
+    let json = await downloadJson(`https://weather.wdwnt.com/api/speech/${destination}`);
+
+    return buildResponse(json.speech);
+}
+
+async function downloadJson(url) {
+    let request = await fetch(url);
+    return await request.json();
+}
+
 function buildResponse(fulfillmentText) {
     return {
         fulfillment_text: fulfillmentText
     };
 }
 
-function buildMediaResponse(podcast) {
-    let description = parser.parse(podcast.content);
+function buildMediaResponse(media) {
+    let description = parser.parse(media.content);
 
     return {
         payload: {
@@ -154,7 +167,7 @@ function buildMediaResponse(podcast) {
                     items: [
                         {
                             simpleResponse: {
-                                textToSpeech: podcast.title
+                                textToSpeech: media.title
                             }
                         },
                         {
@@ -162,12 +175,12 @@ function buildMediaResponse(podcast) {
                                 mediaType: "AUDIO",
                                 mediaObjects: [
                                     {
-                                        name: podcast.title,
-                                        contentUrl: podcast.media_url,
+                                        name: media.title,
+                                        contentUrl: media.media_url,
                                         description: description.text,
                                         icon: {
-                                            url: podcast.featured_image,
-                                            accessibilityText: podcast.title
+                                            url: media.featured_image,
+                                            accessibilityText: media.title
                                         }
                                     }
                                 ]
