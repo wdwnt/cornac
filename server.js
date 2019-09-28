@@ -31,6 +31,7 @@ const BLOG_LATEST_POSTS = 'blog.latest_posts';
 const PODCAST_LISTEN = 'podcast.listen';
 const NTUNES_LISTEN = 'ntunes.listen';
 const DESTINATION_WEATHER = 'destination.weather';
+const WDWNT_FUN = 'wdwnt.fun';
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -59,6 +60,9 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         resp.json(result);
     } else if (action === DESTINATION_WEATHER) {
         var result = await processWeatherRequest(parameters.destination);
+        resp.json(result);
+    } else if (action == WDWNT_FUN) {
+        var result = processFunRequest();
         resp.json(result);
     } else {
         resp.json(buildResponse("Sorry! We don't handle that query yet!"));
@@ -145,24 +149,47 @@ async function processWeatherRequest(destination) {
     return buildResponse(json.speech);
 }
 
+function processFunRequest() {
+    let audioUrls = [
+        'https://appcdn.wdwnt.com/cornac/audio/btmrr.mp3',
+        'https://appcdn.wdwnt.com/cornac/audio/haunted_mansion.mp3',
+        'https://appcdn.wdwnt.com/cornac/audio/tiki.mp3'
+    ];
+
+    let index = Math.floor(Math.random() * 3);
+    let response = `<audio src="${audioUrls[index]}"/>`;
+
+    return buildResponse(response);
+}
+
 async function downloadJson(url) {
     let request = await fetch(url);
     return await request.json();
 }
 
-function buildResponse(fulfillmentText) {
-    return {
-        fulfillment_text: fulfillmentText
-    };
+function buildResponse(fulfillmentText, expectUserResponse = true) {
+    var response = { payload: { google: {} } };
+
+    response.payload.google.expectUserResponse = expectUserResponse;
+
+    response.payload.google.richResponse = { items: [] };
+    response.payload.google.richResponse.items.push({
+        simpleResponse: {
+            textToSpeech: `<speak>${fulfillmentText}</speak>`,
+            displayText: `${fulfillmentText}`
+        }
+    });
+
+    return response;
 }
 
-function buildMediaResponse(media) {
+function buildMediaResponse(media, expectUserResponse = false) {
     let description = parser.parse(media.content);
 
     return {
         payload: {
             google: {
-                expectUserResponse: false,
+                expectUserResponse: expectUserResponse,
                 richResponse: {
                     items: [
                         {
