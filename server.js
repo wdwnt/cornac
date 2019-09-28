@@ -195,9 +195,6 @@ function buildResponse(speech, displayText, expectUserResponse = true) {
 function buildMediaResponse(media, expectUserResponse = false) {
     let response = buildResponse(media.title, media.title, expectUserResponse);
 
-    delete(response.payload.google.richResponse.items[0].simpleResponse.displayText);
-    response.payload.google.richResponse.items[0].simpleResponse.textToSpeech = media.title;
-
     let description = parser.parse(media.content);
 
     response.payload.google.richResponse.items.push({
