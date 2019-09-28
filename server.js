@@ -65,7 +65,8 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         var result = processFunRequest();
         resp.json(result);
     } else {
-        resp.json(buildResponse("Sorry! We don't handle that query yet!"));
+        var result = "Sorry! We don't handle that query yet!";
+        resp.json(buildResponse(result, result));
     }
 });
 
@@ -77,19 +78,20 @@ async function processWaitTimeRequest(attraction_key) {
     pool.close();
 
     if (result.recordset.length == 0) {
-        return buildResponse("Sorry! We couldn't find an attraction that matches your request!");
+        let response = `Sorry! We couldn't find an attraction that matches your request!`;
+        return buildResponse(response, response);
     }
 
     const attraction = result.recordset[0];
-    let fulfillmentText = `${attraction.Name} is currently closed.`;
+    let speech = `${attraction.Name} is currently closed.`;
 
     if (attraction.CurrentStatus.includes('Temporary')) {
-        fulfillmentText = `${attraction.Name} is experiencing a temporary closure.`
+        speech = `${attraction.Name} is experiencing a temporary closure.`
     } else if (attraction.CurrentStatus.includes('Posted')) {
-        fulfillmentText = `The current wait time for ${attraction.Name} is ${attraction.WaitTime} minutes.`
+        speech = `The current wait time for ${attraction.Name} is ${attraction.WaitTime} minutes.`
     }
 
-    return buildResponse(fulfillmentText);
+    return buildResponse(speech, speech);
 }
 
 async function processParkHoursRequest(park_key, date) {
@@ -100,18 +102,25 @@ async function processParkHoursRequest(park_key, date) {
     pool.close();
 
     if (result.recordset.length == 0) {
-        return buildResponse("Sorry! We couldn't find hours for that park!");
+        let response = `Sorry! We couldn't find hours for that park!`;
+        return buildResponse(response, response);
     }
 
     const park = result.recordset[0];
-    var parkHours = park.TodaysHours
-        .replace("<br />", "")
-        .replace("EMH:", "extra magic hours from")
-        .replace("EMH", "extra magic hours from")
-        .replace("+ Special Event", "with a special event")
-        .replace("  ", " ");
+    let speech = `${park.Name} is closed today.`;
 
-    return buildResponse(`${park.Name} is open today from ${parkHours}.`);
+    if (park.TodaysHours.toLowerCase().indexOf('closed') === -1) {
+        var parkHours = park.TodaysHours
+            .replace("<br />", "")
+            .replace("EMH:", "extra magic hours from")
+            .replace("EMH", "extra magic hours from")
+            .replace("+ Special Event", "with a special event")
+            .replace("  ", " ");
+
+        speech = `${park.Name} is open today from ${parkHours}.`;
+    }
+
+    return buildResponse(speech, speech);
 }
 
 async function processLatestHeadlinesRequest() {
@@ -123,7 +132,7 @@ async function processLatestHeadlinesRequest() {
 
     var text = `Here are the latest headlines! ${headlines}`;
 
-    return buildResponse(text);
+    return buildResponse(text, text);
 }
 
 async function processLatestPodcastRequest() {
@@ -146,7 +155,7 @@ function processNTunesListenRequest() {
 async function processWeatherRequest(destination) {
     let json = await downloadJson(`https://weather.wdwnt.com/api/speech/${destination}`);
 
-    return buildResponse(json.speech);
+    return buildResponse(json.speech, json.speech);
 }
 
 function processFunRequest() {
@@ -157,9 +166,9 @@ function processFunRequest() {
     ];
 
     let index = Math.floor(Math.random() * 3);
-    let response = `<audio src="${audioUrls[index]}"/>`;
+    let response = `<audio src="${audioUrls[index]}"></audio>`;
 
-    return buildResponse(response);
+    return buildResponse(response, 'Here you go!');
 }
 
 async function downloadJson(url) {
@@ -167,7 +176,7 @@ async function downloadJson(url) {
     return await request.json();
 }
 
-function buildResponse(fulfillmentText, expectUserResponse = true) {
+function buildResponse(speech, displayText, expectUserResponse = true) {
     var response = { payload: { google: {} } };
 
     response.payload.google.expectUserResponse = expectUserResponse;
@@ -175,8 +184,8 @@ function buildResponse(fulfillmentText, expectUserResponse = true) {
     response.payload.google.richResponse = { items: [] };
     response.payload.google.richResponse.items.push({
         simpleResponse: {
-            textToSpeech: `<speak>${fulfillmentText}</speak>`,
-            displayText: `${fulfillmentText}`
+            textToSpeech: `<speak>${speech}</speak>`,
+            displayText: `${displayText}`
         }
     });
 
@@ -184,40 +193,28 @@ function buildResponse(fulfillmentText, expectUserResponse = true) {
 }
 
 function buildMediaResponse(media, expectUserResponse = false) {
+    let response = buildResponse(media.title, media.title, expectUserResponse);
+
     let description = parser.parse(media.content);
 
-    return {
-        payload: {
-            google: {
-                expectUserResponse: expectUserResponse,
-                richResponse: {
-                    items: [
-                        {
-                            simpleResponse: {
-                                textToSpeech: media.title
-                            }
-                        },
-                        {
-                            mediaResponse: {
-                                mediaType: "AUDIO",
-                                mediaObjects: [
-                                    {
-                                        name: media.title,
-                                        contentUrl: media.media_url,
-                                        description: description.text,
-                                        icon: {
-                                            url: media.featured_image,
-                                            accessibilityText: media.title
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
+    response.payload.google.richResponse.items.push({
+        mediaResponse: {
+            mediaType: "AUDIO",
+            mediaObjects: [
+                {
+                    name: media.title,
+                    contentUrl: media.media_url,
+                    description: description.text,
+                    icon: {
+                        url: media.featured_image,
+                        accessibilityText: media.title
+                    }
                 }
-            }
+            ]
         }
-    };
+    });
+
+    return response;
 }
 
 app.listen(port);
