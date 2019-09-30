@@ -26,6 +26,7 @@ const db_config = {
 };
 
 const ATTRACTION_WAIT = 'attraction.wait';
+const ENTERTAINMENT_NEXTSHOW = 'entertainment.next_show';
 const PARK_HOURS = 'park.hours';
 const BLOG_LATEST_POSTS = 'blog.latest_posts';
 const PODCAST_LISTEN = 'podcast.listen';
@@ -45,6 +46,9 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
 
     if (action === ATTRACTION_WAIT) {
         var result = await processWaitTimeRequest(parameters.attraction);
+        resp.json(result);
+    } else if (action === ENTERTAINMENT_NEXTSHOW) {
+        var result = await processNextShowRequest(parameters.entertainment);
         resp.json(result);
     } else if (action === PARK_HOURS) {
         var result = await processParkHoursRequest(parameters.park, parameters.date);
@@ -92,6 +96,13 @@ async function processWaitTimeRequest(attraction_key) {
     }
 
     return buildResponse(speech, speech);
+}
+
+async function processNextShowRequest(entertainment_key) {
+    let url = `https://now.wdwnt.com/entertainment/getbylanguageprocessingkey?languageprocessingkey=${entertainment_key}`;
+    let json = await downloadJson(url);
+
+    return buildResponse(json.speech, json.speech);
 }
 
 async function processParkHoursRequest(park_key, date) {
