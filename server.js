@@ -181,7 +181,7 @@ function processFunRequest() {
     ];
 
     let index = Math.floor(Math.random() * 3);
-    let response = `<audio src=\"${audioUrls[index]}\"></audio>`;
+    let response = `Here you go! <audio src=\"${audioUrls[index]}\"></audio>`;
 
     return buildResponse(response, 'Here you go!');
 }
