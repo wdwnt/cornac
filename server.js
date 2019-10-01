@@ -33,6 +33,7 @@ const PODCAST_LISTEN = 'podcast.listen';
 const NTUNES_LISTEN = 'ntunes.listen';
 const DESTINATION_WEATHER = 'destination.weather';
 const WDWNT_FUN = 'wdwnt.fun';
+const CHARACTER_APPEARANCES = 'characters.appearances';
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -65,8 +66,11 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
     } else if (action === DESTINATION_WEATHER) {
         var result = await processWeatherRequest(parameters.destination);
         resp.json(result);
-    } else if (action == WDWNT_FUN) {
+    } else if (action === WDWNT_FUN) {
         var result = processFunRequest();
+        resp.json(result);
+    } else if (action === CHARACTER_APPEARANCES) {
+        var result = await processCharacterAppearancesRequest(parameters.characters);
         resp.json(result);
     } else {
         var result = "Sorry! We don't handle that query yet!";
@@ -180,6 +184,26 @@ function processFunRequest() {
     let response = `<audio src="${audioUrls[index]}"></audio>`;
 
     return buildResponse(response, 'Here you go!');
+}
+
+async function processCharacterAppearancesRequest(characters) {
+    let url = `https://now.wdwnt.com/CharacterAppearances/ByCharacterNames?names=${characters}`;
+    let json = await downloadJson(url);
+
+    if (json.length === 0) {
+        const response = 'There are no meet and greets listed today for that character.';
+        return buildResponse(response, response);
+    }
+
+    var start = `You can meet ${json[0].Name} at the following places today:`;
+
+    var response = json
+        .map(ca => `${ca.Location} at ${ca.ParkName} from ${ca.NextAppearanceDisplay}`)
+        .join(', ');
+
+
+    var finalResponse = `${start} ${response}`;
+    return buildResponse(finalResponse, finalResponse);
 }
 
 async function downloadJson(url) {
