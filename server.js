@@ -170,7 +170,7 @@ function processNTunesListenRequest() {
 async function processWeatherRequest(destination) {
     let json = await downloadJson(`https://weather.wdwnt.com/api/speech/${destination}`);
 
-    return buildResponse(json.speech, json.speech);
+    return buildResponse(json.speech, json.displayText);
 }
 
 function processFunRequest() {
