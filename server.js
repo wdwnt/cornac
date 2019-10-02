@@ -82,7 +82,7 @@ async function processWaitTimeRequest(attraction_key) {
     const pool = new sql.ConnectionPool(db_config);
     await pool.connect();
 
-    const result = await pool.query(`select * from AttractionInfos where LanguageProcessingKey = '${attraction_key}'`);
+    const result = await pool.query(`select top 1 * from AttractionInfos inner join Images on FacilityId = AttractionInfos.Id where LanguageProcessingKey = '${attraction_key}'`);
     pool.close();
 
     if (result.recordset.length == 0) {
@@ -99,7 +99,8 @@ async function processWaitTimeRequest(attraction_key) {
         speech = `The current wait time for ${attraction.Name} is ${attraction.WaitTime} minutes.`
     }
 
-    return buildCardResponse(speech, speech, attraction.Name, speech, attraction.ImageUrl);
+    let imageUrl = `https://${attraction.Domain}${attraction.FileLocation}`;
+    return buildCardResponse(speech, speech, attraction.Name, speech, imageUrl);
 }
 
 async function processNextShowRequest(entertainment_key) {
@@ -229,6 +230,8 @@ function buildResponse(speech, displayText, expectUserResponse = true) {
 
 function buildCardResponse(speech, displayText, title, subtitle, imageUrl, expectUserResponse = true) {
     let response = buildResponse(speech, displayText, expectUserResponse);
+
+    delete(response.payload.google.richResponse.items[0].simpleResponse.displayText);
 
     response.payload.google.richResponse.items.push({
         basicCard: {
