@@ -100,14 +100,14 @@ async function processWaitTimeRequest(attraction_key) {
     }
 
     let imageUrl = `https://${attraction.Domain}${attraction.FileLocation}`;
-    return buildCardResponse(speech, speech, attraction.Name, speech, imageUrl);
+    return buildCardResponse(speech, speech, attraction.Name, imageUrl);
 }
 
 async function processNextShowRequest(entertainment_key) {
     let url = `https://now.wdwnt.com/entertainment/getbylanguageprocessingkey?languageprocessingkey=${entertainment_key}`;
     let json = await downloadJson(url);
 
-    return buildCardResponse(json.speech, json.speech, json.name, json.speech, json.imageUrl);
+    return buildCardResponse(json.speech, json.speech, json.name, json.imageUrl);
 }
 
 async function processParkHoursRequest(park_key, date) {
@@ -136,7 +136,7 @@ async function processParkHoursRequest(park_key, date) {
         speech = `${park.Name} is open today from ${parkHours}.`;
     }
 
-    return buildCardResponse(speech, speech, park.Name, speech, park.ImageUrl);
+    return buildCardResponse(speech, speech, park.Name, park.ImageUrl);
 }
 
 async function processLatestHeadlinesRequest() {
@@ -228,15 +228,13 @@ function buildResponse(speech, displayText, expectUserResponse = true) {
     return response;
 }
 
-function buildCardResponse(speech, displayText, title, subtitle, imageUrl, expectUserResponse = true) {
+function buildCardResponse(speech, displayText, title, imageUrl, expectUserResponse = true) {
     let response = buildResponse(speech, displayText, expectUserResponse);
-
-    delete(response.payload.google.richResponse.items[0].simpleResponse.displayText);
 
     response.payload.google.richResponse.items.push({
         basicCard: {
             title,
-            subtitle,
+            formattedText: displayText,
             imageDisplayOptions: "CROPPED",
             image: {
                 url: imageUrl,
