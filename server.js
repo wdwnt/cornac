@@ -163,7 +163,7 @@ async function processParkHoursRequest(park_key, date) {
     addCardResponse(response.payload.google.richResponse.items, park.Name, park.TodaysHours,
         park.Description, park.ImageUrl);
 
-    let moreInfoUrl = `https://now.wdwnt.com/parkinfo/details/${park.Id}`;
+    let moreInfoUrl = `https://now.wdwnt.com/parkinfo/index/${park.Id}`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
 
     addResponseRequest(response);
