@@ -106,7 +106,8 @@ async function processWaitTimeRequest(attraction_key) {
     let imageUrl = `https://${attraction.Domain}${attraction.FileLocation}`;
 
     let response = buildResponse(speech, speech, true);
-    addCardResponse(response.payload.google.richResponse.items, attraction.Name, attraction.Description, imageUrl);
+    addCardResponse(response.payload.google.richResponse.items, attraction.Name,
+        attraction.CurrentStatus, attraction.Description, imageUrl);
 
     let moreInfoUrl = `https://now.wdwnt.com/attraction/details/${attraction.Id[0]}`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
@@ -121,7 +122,8 @@ async function processNextShowRequest(entertainment_key) {
     let json = await downloadJson(url);
 
     let response = buildResponse(json.speech, json.speech, true);
-    addCardResponse(response.payload.google.richResponse.items, json.name, json.description, json.imageUrl);
+    addCardResponse(response.payload.google.richResponse.items, json.name, null,
+        json.description, json.imageUrl);
 
     let moreInfoUrl = `https://now.wdwnt.com/entertainment/details/${json.id}`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
@@ -158,7 +160,8 @@ async function processParkHoursRequest(park_key, date) {
     }
 
     let response = buildResponse(speech, speech, true);
-    addCardResponse(response.payload.google.richResponse.items, park.Name, park.Description, park.ImageUrl);
+    addCardResponse(response.payload.google.richResponse.items, park.Name, park.TodaysHours,
+        park.Description, park.ImageUrl);
 
     let moreInfoUrl = `https://now.wdwnt.com/parkinfo/details/${park.Id}`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
@@ -278,10 +281,11 @@ function buildResponse(speech, displayText, expectUserResponse = true) {
     return response;
 }
 
-function addCardResponse(richResponseItemsArray, title, formattedText, imageUrl) {
+function addCardResponse(richResponseItemsArray, title, subtitle, formattedText, imageUrl) {
     richResponseItemsArray.push({
         basicCard: {
             title,
+            subtitle,
             formattedText,
             imageDisplayOptions: "CROPPED",
             image: {
@@ -293,10 +297,7 @@ function addCardResponse(richResponseItemsArray, title, formattedText, imageUrl)
 }
 
 function addButtonToCardResponse(cardResponse, buttonTitle, buttonUrl) {
-    if (!cardResponse.basicCard.buttons) {
-        cardResponse.basicCard.buttons = [];
-    }
-
+    cardResponse.basicCard.buttons = [];
     cardResponse.basicCard.buttons.push({
         title: buttonTitle,
         openUrlAction: {
