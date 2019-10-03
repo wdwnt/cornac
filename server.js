@@ -270,6 +270,8 @@ async function downloadJson(url) {
 
 function buildResponse(speech, displayText, expectUserResponse = true) {
     var response = { payload: { google: {} } };
+    
+    response.fulfillment_text = displayText;
 
     response.payload.google.expectUserResponse = expectUserResponse;
 
