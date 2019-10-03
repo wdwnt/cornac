@@ -73,8 +73,10 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         var result = await processCharacterAppearancesRequest(parameters.characters);
         resp.json(result);
     } else {
-        var result = "Sorry! We don't handle that query yet!";
-        resp.json(buildResponse(result, result));
+        const result = "Sorry! We don't handle that query yet!";
+        let response = buildResponse(result, result);
+        addResponseRequest(response);
+        resp.json(response);
     }
 });
 
@@ -86,8 +88,10 @@ async function processWaitTimeRequest(attraction_key) {
     pool.close();
 
     if (result.recordset.length == 0) {
-        let response = `Sorry! We couldn't find an attraction that matches your request!`;
-        return buildResponse(response, response);
+        const response = `Sorry! We couldn't find an attraction that matches your request!`;
+        let responseObject = buildResponse(response, response);
+        addResponseRequest(responseObject);
+        return responseObject;
     }
 
     const attraction = result.recordset[0];
@@ -100,14 +104,35 @@ async function processWaitTimeRequest(attraction_key) {
     }
 
     let imageUrl = `https://${attraction.Domain}${attraction.FileLocation}`;
-    return buildCardResponse(speech, speech, attraction.Name, imageUrl);
+
+    let response = buildResponse(speech, speech, true);
+    addCardResponse(response.payload.google.richResponse.items, attraction.Name, attraction.Description, imageUrl);
+
+    let moreInfoUrl = `https://now.wdwnt.com/attraction/details/${attraction.Id[0]}`;
+    let viewOnMapUrl = `https://now.wdwnt.com/maps?id=${attraction.Id[0]}&type=Attraction`;
+    addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
+    addButtonToCardResponse(response.payload.google.richResponse.items[1], "View on map", viewOnMapUrl);
+
+    addResponseRequest(response);
+
+    return response;
 }
 
 async function processNextShowRequest(entertainment_key) {
     let url = `https://now.wdwnt.com/entertainment/getbylanguageprocessingkey?languageprocessingkey=${entertainment_key}`;
     let json = await downloadJson(url);
 
-    return buildCardResponse(json.speech, json.speech, json.name, json.imageUrl);
+    let response = buildResponse(json.speech, json.speech, true);
+    addCardResponse(response.payload.google.richResponse.items, json.name, json.description, json.imageUrl);
+
+    let moreInfoUrl = `https://now.wdwnt.com/entertainment/details/${json.id}`;
+    let viewOnMapUrl = `https://now.wdwnt.com/maps?id=${json.id}&type=Entertainment`;
+    addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
+    addButtonToCardResponse(response.payload.google.richResponse.items[1], "View on map", viewOnMapUrl);
+
+    addResponseRequest(response);
+
+    return response;
 }
 
 async function processParkHoursRequest(park_key, date) {
@@ -136,7 +161,17 @@ async function processParkHoursRequest(park_key, date) {
         speech = `${park.Name} is open today from ${parkHours}.`;
     }
 
-    return buildCardResponse(speech, speech, park.Name, park.ImageUrl);
+    let response = buildResponse(speech, speech, true);
+    addCardResponse(response.payload.google.richResponse.items, park.Name, park.Description, park.ImageUrl);
+
+    let moreInfoUrl = `https://now.wdwnt.com/parkinfo/details/${park.Id}`;
+    let viewOnMapUrl = `https://now.wdwnt.com/maps?id=${park.Id}&type=theme-park`;
+    addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
+    addButtonToCardResponse(response.payload.google.richResponse.items[1], "View on map", viewOnMapUrl);
+
+    addResponseRequest(response);
+
+    return response;
 }
 
 async function processLatestHeadlinesRequest() {
@@ -148,7 +183,10 @@ async function processLatestHeadlinesRequest() {
 
     var text = `Here are the latest headlines! ${headlines}`;
 
-    return buildResponse(text, text);
+    let response = buildResponse(text, text);
+    addResponseRequest(response);
+
+    return response;
 }
 
 async function processLatestPodcastRequest() {
@@ -171,20 +209,36 @@ function processNTunesListenRequest() {
 async function processWeatherRequest(destination) {
     let json = await downloadJson(`https://weather.wdwnt.com/api/speech/${destination}`);
 
-    return buildResponse(json.speech, json.displayText);
+    let response = buildResponse(json.speech, json.displayText);
+    addResponseRequest(response);
+
+    return response;
 }
 
 function processFunRequest() {
     let audioUrls = [
-        'https://appcdn.wdwnt.com/cornac/audio/btmrr.mp3',
-        'https://appcdn.wdwnt.com/cornac/audio/haunted_mansion.mp3',
-        'https://appcdn.wdwnt.com/cornac/audio/tiki.mp3'
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/btmrr.mp3',
+            text: 'Hang on tight to them hats and glasses!',
+        },
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/haunted_mansion.mp3',
+            text: 'Welcome, foolish mortals, to the Haunted Mansion...'
+        },
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/tiki.mp3',
+            text: 'My siestas are getting shorter and shorter!'
+        }
     ];
 
-    let index = Math.floor(Math.random() * 3);
-    let response = `<audio src=\"${audioUrls[index]}\">Here you go!</audio>`;
+    const index = Math.floor(Math.random() * audioUrls.length);
+    const randomAudio = audioUrls[index];
+    const response = `<audio src=\"${randomAudio.src}\">${randomAudio.text}</audio>`;
 
-    return buildResponse(response, 'Here you go!');
+    let responseObject = buildResponse(response, randomAudio.text);
+    addResponseRequest(responseObject);
+
+    return responseObject;
 }
 
 async function processCharacterAppearancesRequest(characters) {
@@ -202,9 +256,11 @@ async function processCharacterAppearancesRequest(characters) {
         .map(ca => `${ca.Location} at ${ca.ParkName} from ${ca.NextAppearanceDisplay}`)
         .join(', ');
 
-
     var finalResponse = `${start} ${response}`;
-    return buildResponse(finalResponse, finalResponse);
+    let responseObject = buildResponse(finalResponse, finalResponse);
+    addResponseRequest(responseObject);
+
+    return responseObject;
 }
 
 async function downloadJson(url) {
@@ -228,13 +284,11 @@ function buildResponse(speech, displayText, expectUserResponse = true) {
     return response;
 }
 
-function buildCardResponse(speech, displayText, title, imageUrl, expectUserResponse = true) {
-    let response = buildResponse(speech, displayText, expectUserResponse);
-
-    response.payload.google.richResponse.items.push({
+function addCardResponse(richResponseItemsArray, title, formattedText, imageUrl) {
+    richResponseItemsArray.push({
         basicCard: {
             title,
-            formattedText: displayText,
+            formattedText,
             imageDisplayOptions: "CROPPED",
             image: {
                 url: imageUrl,
@@ -242,9 +296,21 @@ function buildCardResponse(speech, displayText, title, imageUrl, expectUserRespo
             }
         }
     });
-
-    return response;
 }
+
+function addButtonToCardResponse(cardResponse, buttonTitle, buttonUrl) {
+    if (!cardResponse.basicCard.buttons) {
+        cardResponse.basicCard.buttons = [];
+    }
+
+    cardResponse.basicCard.buttons.push({
+        title: buttonTitle,
+        openUrlAction: {
+            url: buttonUrl
+        }
+    });
+}
+
 
 function buildMediaResponse(media, expectUserResponse = false) {
     let response = buildResponse(media.title, media.title, expectUserResponse);
@@ -268,7 +334,26 @@ function buildMediaResponse(media, expectUserResponse = false) {
         }
     });
 
+    addResponseRequest(response, expectUserResponse);
+
     return response;
+}
+
+function addResponseRequest(response, expectUserResponse = true) {
+    if (expectUserResponse) {
+        response.payload.google.richResponse.items.push(buildUserResponseRequest());
+    }
+}
+
+function buildUserResponseRequest() {
+    const userResponseRequestText = `Anything else?`;
+
+    return {
+        simpleResponse: {
+            textToSpeech: `<speak>${userResponseRequestText}</speak>`,
+            displayText: `${userResponseRequestText}`
+        }
+    };
 }
 
 app.listen(port);
