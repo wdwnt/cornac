@@ -244,7 +244,10 @@ async function processCharacterAppearancesRequest(characters) {
 
     if (json.length === 0) {
         const response = 'There are no meet and greets listed today for that character.';
-        return buildResponse(response, response);
+        let responseObject = buildResponse(response, response);
+        addResponseRequest(responseObject);
+
+        return responseObject;
     }
 
     var start = `You can meet ${json[0].Name} at the following places today:`;
@@ -341,12 +344,18 @@ function addResponseRequest(response, expectUserResponse = true) {
 }
 
 function buildUserResponseRequest() {
-    const userResponseRequestText = `Anything else?`;
+    let prompts = [
+        `Anything else?`,
+        `What else can I do for you?`,
+        `Need more assistance?`
+    ];
+
+    const index = Math.floor(Math.random() * prompts.length);
 
     return {
         simpleResponse: {
-            textToSpeech: `<speak>${userResponseRequestText}</speak>`,
-            displayText: `${userResponseRequestText}`
+            textToSpeech: `<speak>${prompts[index]}</speak>`,
+            displayText: `${prompts[index]}`
         }
     };
 }
