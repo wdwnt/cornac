@@ -109,9 +109,7 @@ async function processWaitTimeRequest(attraction_key) {
     addCardResponse(response.payload.google.richResponse.items, attraction.Name, attraction.Description, imageUrl);
 
     let moreInfoUrl = `https://now.wdwnt.com/attraction/details/${attraction.Id[0]}`;
-    let viewOnMapUrl = `https://now.wdwnt.com/maps?id=${attraction.Id[0]}&type=Attraction`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
-    addButtonToCardResponse(response.payload.google.richResponse.items[1], "View on map", viewOnMapUrl);
 
     addResponseRequest(response);
 
@@ -126,9 +124,7 @@ async function processNextShowRequest(entertainment_key) {
     addCardResponse(response.payload.google.richResponse.items, json.name, json.description, json.imageUrl);
 
     let moreInfoUrl = `https://now.wdwnt.com/entertainment/details/${json.id}`;
-    let viewOnMapUrl = `https://now.wdwnt.com/maps?id=${json.id}&type=Entertainment`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
-    addButtonToCardResponse(response.payload.google.richResponse.items[1], "View on map", viewOnMapUrl);
 
     addResponseRequest(response);
 
@@ -165,9 +161,7 @@ async function processParkHoursRequest(park_key, date) {
     addCardResponse(response.payload.google.richResponse.items, park.Name, park.Description, park.ImageUrl);
 
     let moreInfoUrl = `https://now.wdwnt.com/parkinfo/details/${park.Id}`;
-    let viewOnMapUrl = `https://now.wdwnt.com/maps?id=${park.Id}&type=theme-park`;
     addButtonToCardResponse(response.payload.google.richResponse.items[1], "More info", moreInfoUrl);
-    addButtonToCardResponse(response.payload.google.richResponse.items[1], "View on map", viewOnMapUrl);
 
     addResponseRequest(response);
 
