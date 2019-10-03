@@ -216,7 +216,7 @@ function processFunRequest() {
     let audioUrls = [
         {
             src: 'https://appcdn.wdwnt.com/cornac/audio/btmrr.mp3',
-            text: 'Hang on tight to them hats and glasses!',
+            text: 'Hang on to them hats and glasses!',
         },
         {
             src: 'https://appcdn.wdwnt.com/cornac/audio/haunted_mansion.mp3',
@@ -270,7 +270,7 @@ async function downloadJson(url) {
 
 function buildResponse(speech, displayText, expectUserResponse = true) {
     var response = { payload: { google: {} } };
-    
+
     response.fulfillment_text = displayText;
 
     response.payload.google.expectUserResponse = expectUserResponse;
