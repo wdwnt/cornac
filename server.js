@@ -256,9 +256,7 @@ function processCornacRequest() {
     const randomJoke = jokes[index];
 
     let response = randomJoke.joke;
-    response += '<break time=\"3\" />';
     response += '<audio src=\"https://appcdn.wdwnt.com/cornac/audio/open_envelope.mp3\">[Opens envelope]</audio>';
-    response += '<break time=\"1\" />';
     response += randomJoke.punchline;
     response += '<audio src=\"https://appcdn.wdwnt.com/cornac/audio/rim_shot.mp3\">[Rimshot]</audio>';
 
