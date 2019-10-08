@@ -262,7 +262,7 @@ function processCornacRequest() {
     response += randomJoke.punchline;
     response += '<audio src=\"https://appcdn.wdwnt.com/cornac/audio/rim_shot.mp3\">[Rimshot]</audio>';
 
-    let displayText = `${randomJoke.joke} [Opens envelope] ${randomJoke.punchline} [Rimshot]`;
+    let displayText = `${randomJoke.joke_display} [Opens envelope] ${randomJoke.punchline_display} [Rimshot]`;
 
     let responseObject = buildResponse(response, displayText);
     addResponseRequest(responseObject);
