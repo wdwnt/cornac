@@ -1,6 +1,8 @@
 require('dotenv').config();
 const sql = require('mssql');
 const os = require("os");
+const fs = require('fs');
+
 const fetch = require("node-fetch");
 
 const parser = require("node-html-parser");
@@ -33,12 +35,17 @@ const PODCAST_LISTEN = 'podcast.listen';
 const NTUNES_LISTEN = 'ntunes.listen';
 const DESTINATION_WEATHER = 'destination.weather';
 const WDWNT_FUN = 'wdwnt.fun';
+const WDWNT_CORNAC = 'wdwnt.cornac';
 const CHARACTER_APPEARANCES = 'characters.appearances';
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
+});
+
+app.get("/", (req, resp) => {
+    resp.redirect(301, process.env.CORNAC_LANDING_PAGE_URL);
 });
 
 app.post("/api/language/respondtoquery", async (req, resp) => {
@@ -68,6 +75,9 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         resp.json(result);
     } else if (action === WDWNT_FUN) {
         var result = processFunRequest();
+        resp.json(result);
+    } else if (action === WDWNT_CORNAC) {
+        var result = processCornacRequest();
         resp.json(result);
     } else if (action === CHARACTER_APPEARANCES) {
         var result = await processCharacterAppearancesRequest(parameters.characters);
@@ -233,6 +243,28 @@ function processFunRequest() {
     const response = `<audio src=\"${randomAudio.src}\">${randomAudio.text}</audio>`;
 
     let responseObject = buildResponse(response, randomAudio.text);
+    addResponseRequest(responseObject);
+
+    return responseObject;
+}
+
+function processCornacRequest() {
+    let cornacData = fs.readFileSync('cornac.json');
+    let jokes = JSON.parse(cornacData);
+
+    const index = Math.floor(Math.random() * jokes.length);
+    const randomJoke = jokes[index];
+
+    let response = randomJoke.joke;
+    response += '<break time=\"3\" />';
+    response += '<audio src=\"https://appcdn.wdwnt.com/cornac/audio/open_envelope.mp3\">[Opens envelope]</audio>';
+    response += '<break time=\"1\" />';
+    response += randomJoke.punchline;
+    response += '<audio src=\"https://appcdn.wdwnt.com/cornac/audio/rim_shot.mp3\">[Rimshot]</audio>';
+
+    let displayText = `${randomJoke.joke} [Opens envelope] ${randomJoke.punchline} [Rimshot]`;
+
+    let responseObject = buildResponse(response, displayText);
     addResponseRequest(responseObject);
 
     return responseObject;
