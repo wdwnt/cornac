@@ -235,6 +235,10 @@ function processFunRequest() {
         {
             src: 'https://appcdn.wdwnt.com/cornac/audio/tiki.mp3',
             text: 'My siestas are getting shorter and shorter!'
+        },
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/257.mp3',
+            text: 'Put up 2, 5, and 7. 7? Yeah...7.'
         }
     ];
 
