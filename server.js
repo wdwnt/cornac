@@ -239,6 +239,18 @@ function processFunRequest() {
         {
             src: 'https://appcdn.wdwnt.com/cornac/audio/257.mp3',
             text: 'Put up 2, 5, and 7. 7? Yeah...7.'
+        },
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/pirates.mp3',
+            text: "I'm not spongin' for rum. It be gold I'm after!"
+        },
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/cop.mp3',
+            text: 'No privacy at all around this place!'
+        },
+        {
+            src: 'https://appcdn.wdwnt.com/cornac/audio/dreamfinder.mp3',
+            text: 'Oh, hello there. So glad you could come along. I am the Dreamfinder!'
         }
     ];
 
