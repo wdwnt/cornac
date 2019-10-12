@@ -68,7 +68,7 @@ app.post("/api/language/respondtoquery", async (req, resp) => {
         var result = await processLatestPodcastRequest();
         resp.json(result);
     } else if (action === NTUNES_LISTEN) {
-        var result = processNTunesListenRequest();
+        var result = await processNTunesListenRequest();
         resp.json(result);
     } else if (action === DESTINATION_WEATHER) {
         var result = await processWeatherRequest(parameters.destination);
@@ -199,12 +199,24 @@ async function processLatestHeadlinesRequest() {
 async function processLatestPodcastRequest() {
     let json = await downloadJson('https://fastpass.wdwnt.com/podcasts?noplayer');
 
-    return buildMediaResponse(json[0]);
+    let firstPodcastEpisode = json[0];
+    firstPodcastEpisode.speech = firstPodcastEpisode.title;
+    firstPodcastEpisode.displayText = firstPodcastEpisode.title;
+
+    return buildMediaResponse(firstPodcastEpisode);
 }
 
-function processNTunesListenRequest() {
+async function processNTunesListenRequest() {
+    let json = await downloadJson('https://fastpass.wdwnt.com/live365');
+    let title = json['current-track'].title;
+    let artist = json['current-track'].artist;
+
+    let speech = `Playing right now on <say-as interpret-as=\"characters\">WDWN</say-as> Tunes is ${title} ${artist}.`;
+    let displayText = `Playing right now on WDWNTunes is ${title} ${artist}.`;
+
     let ntunesInfo = {
-        title: 'WDWNTunes',
+        speech,
+        displayText,
         content: 'Broadcasting magic, music and mayhem',
         media_url: 'http://edge1-b.exa.live365.net/a31769',
         featured_image: 'https://wdwnt.com/wp-content/uploads/2017/11/WDWNTunes_v3_600.png'
@@ -359,7 +371,7 @@ function addButtonToCardResponse(cardResponse, buttonTitle, buttonUrl) {
 
 
 function buildMediaResponse(media, expectUserResponse = false) {
-    let response = buildResponse(media.title, media.title, expectUserResponse);
+    let response = buildResponse(media.speech, media.displayText, expectUserResponse);
 
     let description = parser.parse(media.content);
 
