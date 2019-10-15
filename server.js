@@ -48,47 +48,63 @@ app.get("/", (req, resp) => {
     resp.redirect(301, process.env.CORNAC_LANDING_PAGE_URL);
 });
 
+app.post("/api/language/respondtoquery/alexa", async (req, resp) => {
+    var intent = req.body.request.intent.name;
+    var slots = req.body.request.intent.slots;
+
+    let response = await processRequest(intent, slots);
+    let alexa_response = convertDialogflowResponseToAlexa(response);
+
+    resp.json(alexa_response);
+});
+
+app.post("/api/language/respondtoquery/dialogflow", async (req, resp) => {
+    let response = await processDialogflowResponse(req);
+
+    resp.json(response);
+});
+
 app.post("/api/language/respondtoquery", async (req, resp) => {
+    let response = await processDialogflowResponse(req);
+
+    resp.json(response);
+});
+
+async function processDialogflowResponse(req) {
     var action = req.body.queryResult.action;
     var parameters = req.body.queryResult.parameters;
 
+    return await processRequest(action, parameters);
+}
+
+async function processRequest(action, parameters) {
     if (action === ATTRACTION_WAIT) {
-        var result = await processWaitTimeRequest(parameters.attraction);
-        resp.json(result);
+        return await processWaitTimeRequest(parameters.attraction);
     } else if (action === ENTERTAINMENT_NEXTSHOW) {
-        var result = await processNextShowRequest(parameters.entertainment);
-        resp.json(result);
+        return await processNextShowRequest(parameters.entertainment);
     } else if (action === PARK_HOURS) {
-        var result = await processParkHoursRequest(parameters.park, parameters.date);
-        resp.json(result);
+        return await processParkHoursRequest(parameters.park, parameters.date);
     } else if (action === BLOG_LATEST_POSTS) {
-        var result = await processLatestHeadlinesRequest();
-        resp.json(result);
+        return await processLatestHeadlinesRequest();
     } else if (action === PODCAST_LISTEN) {
-        var result = await processLatestPodcastRequest();
-        resp.json(result);
+        return await processLatestPodcastRequest();
     } else if (action === NTUNES_LISTEN) {
-        var result = await processNTunesListenRequest();
-        resp.json(result);
+        return await processNTunesListenRequest();
     } else if (action === DESTINATION_WEATHER) {
-        var result = await processWeatherRequest(parameters.destination);
-        resp.json(result);
+        return await processWeatherRequest(parameters.destination);
     } else if (action === WDWNT_FUN) {
-        var result = processFunRequest();
-        resp.json(result);
+        return processFunRequest();
     } else if (action === WDWNT_CORNAC) {
-        var result = processCornacRequest();
-        resp.json(result);
+        return processCornacRequest();
     } else if (action === CHARACTER_APPEARANCES) {
-        var result = await processCharacterAppearancesRequest(parameters.characters);
-        resp.json(result);
+        return await processCharacterAppearancesRequest(parameters.characters);
     } else {
         const result = "Sorry! We don't handle that query yet!";
         let response = buildResponse(result, result);
         addResponseRequest(response);
-        resp.json(response);
+        return response;
     }
-});
+}
 
 async function processWaitTimeRequest(attraction_key) {
     const pool = new sql.ConnectionPool(db_config);
@@ -418,6 +434,24 @@ function buildUserResponseRequest() {
             displayText: `${prompts[index]}`
         }
     };
+}
+
+function convertDialogflowResponseToAlexa(response) {
+    let google_items = response.payload.google.richResponse.items;
+    let simpleResponse = google_items[0].simpleResponse;
+
+    let alexa_response = {
+        response: {
+            outputSpeech: {
+                type: "PlainText",
+                text: simpleResponse.displayText,
+                ssml: simpleResponse.textToSpeech
+            }
+        },
+        version: "v1"
+    };
+
+    return alexa_response;
 }
 
 app.listen(port);
