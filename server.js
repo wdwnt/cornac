@@ -36,6 +36,7 @@ const NTUNES_LISTEN = 'ntunes.listen';
 const DESTINATION_WEATHER = 'destination.weather';
 const WDWNT_FUN = 'wdwnt.fun';
 const WDWNT_CORNAC = 'wdwnt.cornac';
+const WDWNT_WELCOME = 'wdwnt.welcome';
 const CHARACTER_APPEARANCES = 'characters.appearances';
 
 app.use(function(req, res, next) {
@@ -49,11 +50,28 @@ app.get("/", (req, resp) => {
 });
 
 app.post("/api/language/respondtoquery/alexa", async (req, resp) => {
-    var intent = req.body.request.intent.name;
-    var slots = req.body.request.intent.slots;
+    if (req.body.request) {
+        var intent = req.body.request.intent.name;
+        var slots = req.body.request.intent.slots;
 
-    let response = await processRequest(intent, slots);
-    let alexa_response = convertDialogflowResponseToAlexa(response);
+        let response = await processRequest(intent, slots);
+        let alexa_response = convertDialogflowResponseToAlexa(response);
+
+        resp.json(alexa_response);
+        return;
+    } else if (req.body.payload) {
+        var request = req.body.payload.content.invocationRequest.body.request;
+        if (request.type === 'LaunchRequest') {
+            let response = await processRequest(WDWNT_WELCOME, {});
+            let alexa_response = convertDialogflowResponseToAlexa(response);
+
+            resp.json(alexa_response);
+            return;
+        }
+    }
+
+    let error_response = await processRequest(null, null);
+    let alexa_response = convertDialogflowResponseToAlexa(error_response);
 
     resp.json(alexa_response);
 });
@@ -78,7 +96,9 @@ async function processDialogflowResponse(req) {
 }
 
 async function processRequest(action, parameters) {
-    if (action === ATTRACTION_WAIT) {
+    if (action === WDWNT_WELCOME) {
+        return processWelcomeRequest();
+    } else if (action === ATTRACTION_WAIT) {
         return await processWaitTimeRequest(parameters.attraction);
     } else if (action === ENTERTAINMENT_NEXTSHOW) {
         return await processNextShowRequest(parameters.entertainment);
@@ -104,6 +124,23 @@ async function processRequest(action, parameters) {
         addResponseRequest(response);
         return response;
     }
+}
+
+function processWelcomeRequest() {
+    let welcomeResponses = [
+        'Welcome to WDWNT! What can I look up for you?',
+        'To all who come to this happy app, welcome! What can I do for you?',
+        'My siestas are getting shorter and shorter. How can I help?',
+        'Welcome, foolish mortal, to the WDWNT app. How can I be of assistance?'
+    ];
+
+    const index = Math.floor(Math.random() * welcomeResponses.length);
+    const randomResponse = welcomeResponses[index];
+
+    let responseObject = buildResponse(randomResponse, randomResponse);
+    addResponseRequest(responseObject);
+
+    return responseObject;
 }
 
 async function processWaitTimeRequest(attraction_key) {
