@@ -51,6 +51,14 @@ app.get("/", (req, resp) => {
 
 app.post("/api/language/respondtoquery/alexa", async (req, resp) => {
     if (req.body.request) {
+        if (req.body.request.type === 'LaunchRequest') {
+            let response = await processRequest(WDWNT_WELCOME, {});
+            let alexa_response = convertDialogflowResponseToAlexa(response);
+
+            resp.json(alexa_response);
+            return;
+        }
+
         var intent = req.body.request.intent.name;
         var slots = req.body.request.intent.slots;
 
@@ -59,15 +67,6 @@ app.post("/api/language/respondtoquery/alexa", async (req, resp) => {
 
         resp.json(alexa_response);
         return;
-    } else if (req.body.payload) {
-        var request = req.body.payload.content.invocationRequest.body.request;
-        if (request.type === 'LaunchRequest') {
-            let response = await processRequest(WDWNT_WELCOME, {});
-            let alexa_response = convertDialogflowResponseToAlexa(response);
-
-            resp.json(alexa_response);
-            return;
-        }
     }
 
     let error_response = await processRequest(null, null);
