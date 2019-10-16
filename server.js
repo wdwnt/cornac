@@ -95,27 +95,27 @@ async function processDialogflowResponse(req) {
 }
 
 async function processRequest(action, parameters) {
-    if (action === WDWNT_WELCOME) {
+    if (action === WDWNT_WELCOME || action === 'DefaultWelcomeIntent') {
         return processWelcomeRequest();
-    } else if (action === ATTRACTION_WAIT) {
+    } else if (action === ATTRACTION_WAIT || action === 'WaitTimeForAttraction') {
         return await processWaitTimeRequest(parameters.attraction);
-    } else if (action === ENTERTAINMENT_NEXTSHOW) {
+    } else if (action === ENTERTAINMENT_NEXTSHOW || action === 'NextShowtimeForEntertainment') {
         return await processNextShowRequest(parameters.entertainment);
-    } else if (action === PARK_HOURS) {
+    } else if (action === PARK_HOURS || action === 'ParkHours') {
         return await processParkHoursRequest(parameters.park, parameters.date);
-    } else if (action === BLOG_LATEST_POSTS) {
+    } else if (action === BLOG_LATEST_POSTS || action === 'LatestHeadlines') {
         return await processLatestHeadlinesRequest();
-    } else if (action === PODCAST_LISTEN) {
+    } else if (action === PODCAST_LISTEN || action === 'LatestPodcast') {
         return await processLatestPodcastRequest();
-    } else if (action === NTUNES_LISTEN) {
+    } else if (action === NTUNES_LISTEN || action === 'Wdwntunes') {
         return await processNTunesListenRequest();
-    } else if (action === DESTINATION_WEATHER) {
+    } else if (action === DESTINATION_WEATHER || action === 'Weather') {
         return await processWeatherRequest(parameters.destination);
-    } else if (action === WDWNT_FUN) {
+    } else if (action === WDWNT_FUN || action === 'Random') {
         return processFunRequest();
-    } else if (action === WDWNT_CORNAC) {
+    } else if (action === WDWNT_CORNAC || action === 'Cornac') {
         return processCornacRequest();
-    } else if (action === CHARACTER_APPEARANCES) {
+    } else if (action === CHARACTER_APPEARANCES || action === 'MeetAndGreets') {
         return await processCharacterAppearancesRequest(parameters.characters);
     } else {
         const result = "Sorry! We don't handle that query yet!";
