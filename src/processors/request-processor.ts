@@ -1,6 +1,6 @@
 import sql from 'mssql';
 import fetch from 'node-fetch';
-import parser from 'node-html-parser';
+import { parse } from 'node-html-parser';
 
 import { DialogFlowResponse } from '../models/response/dialogflow/dialogflow-response';
 import { BlogPostResponse } from '../models/response/fastpass/blog-post-response';
@@ -332,7 +332,7 @@ function addButtonToCardResponse(cardResponse: any, buttonTitle: string, buttonU
 function buildMediaResponse(media: any, expectUserResponse = false) {
     const response = buildResponse(media.speech, media.displayText, expectUserResponse);
 
-    const description = parser.parse(media.content);
+    const description = parse(media.content);
 
     response.payload.google.richResponse.items.push({
         mediaResponse: {
