@@ -151,7 +151,7 @@ async function processParkHoursRequest(parkKey: string, date: Date) {
 }
 
 async function processLatestHeadlinesRequest() {
-    const json = await downloadJson('https://fastpass.wdwnt.com/posts') as BlogPostResponse[];
+    const json = await downloadJson(Constants.BLOG_POST_URL) as BlogPostResponse[];
 
     const headlines = json.slice(0, 3)
         .map((p) => p.title)
@@ -176,7 +176,7 @@ async function processLatestPodcastRequest() {
 }
 
 async function processNTunesListenRequest() {
-    const json = await downloadJson('https://fastpass.wdwnt.com/live365');
+    const json = await downloadJson(Constants.NTUNES_URL);
     const title = json['current-track'].title;
     const artist = json['current-track'].artist;
 

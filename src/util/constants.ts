@@ -11,5 +11,7 @@ export class Constants {
     public static readonly WDWNT_WELCOME = 'wdwnt.welcome';
     public static readonly CHARACTER_APPEARANCES = 'characters.appearances';
 
+    public static readonly BLOG_POST_URL = 'https://fastpass.wdwnt.com/posts';
+    public static readonly NTUNES_URL = 'https://fastpass.wdwnt.com/live365';
     public static readonly PODCAST_URL = 'https://fastpass.wdwnt.com/podcasts?noplayer';
 }
