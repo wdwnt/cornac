@@ -19,7 +19,7 @@ export function convertDialogflowResponseToAlexa(response: DialogFlowResponse, i
                     type: isSSML ? 'SSML' : 'PlainText'
                 }
             },
-            shouldEndSession: response.payload.google.expectUserResponse
+            shouldEndSession: !response.payload.google.expectUserResponse
         },
         version: '1.0'
     };
