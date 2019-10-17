@@ -1,4 +1,5 @@
 import sql from 'mssql';
+import fetch from 'node-fetch';
 import parser from 'node-html-parser';
 
 import { DialogFlowResponse } from '../models/response/dialogflow/dialogflow-response';
