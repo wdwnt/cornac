@@ -4,9 +4,7 @@
     "private": true,
     "main": "dist/server.js",
     "scripts": {
-        "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
-        "build": "tsc",
-        "prestart": "npm run build",
+        "postinstall": "tslint -c tslint.json -p tsconfig.json --fix && tsc",
         "start": "node .",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
