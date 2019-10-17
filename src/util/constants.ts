@@ -10,4 +10,6 @@ export class Constants {
     public static readonly WDWNT_CORNAC = 'wdwnt.cornac';
     public static readonly WDWNT_WELCOME = 'wdwnt.welcome';
     public static readonly CHARACTER_APPEARANCES = 'characters.appearances';
+
+    public static readonly PODCAST_URL = 'https://fastpass.wdwnt.com/podcasts?noplayer';
 }

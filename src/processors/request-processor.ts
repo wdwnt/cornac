@@ -166,8 +166,7 @@ async function processLatestHeadlinesRequest() {
 }
 
 async function processLatestPodcastRequest() {
-    // tslint:disable-next-line: max-line-length
-    const json = await downloadJson('https://fastpass.wdwnt.com/podcasts?noplayer') as PodcastEpisodeResponse[];
+    const json = await downloadJson(Constants.PODCAST_URL) as PodcastEpisodeResponse[];
 
     const firstPodcastEpisode = json[0];
     firstPodcastEpisode.speech = firstPodcastEpisode.title;
