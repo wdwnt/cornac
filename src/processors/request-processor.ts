@@ -55,7 +55,6 @@ function processWelcomeRequest() {
     const randomResponse = welcomeResponses[index];
 
     const responseObject = buildResponse(randomResponse, randomResponse);
-    addResponseRequest(responseObject);
 
     return responseObject;
 }
