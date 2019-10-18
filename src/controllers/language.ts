@@ -24,9 +24,16 @@ export const alexa = async (req: Request, res: Response) => {
         }
 
         const intent = req.body.request.intent.name;
-        const slots = req.body.request.intent.slots;
 
-        const response = await requestProcessor.processRequest(intent, slots);
+        const slots = req.body.request.intent.slots;
+        const slotsKeys = Object.keys(slots);
+
+        const parameters: {[k: string]: any} = {};
+        slotsKeys.forEach((element, index) => {
+            parameters[element] = slots[element].value;
+        });
+
+        const response = await requestProcessor.processRequest(intent, parameters);
         const convertedResponse = alexaConverter.convertDialogflowResponseToAlexa(response);
 
         res.json(convertedResponse);
