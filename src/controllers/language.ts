@@ -30,7 +30,7 @@ export const alexa = async (req: Request, res: Response) => {
 
         const parameters: {[k: string]: any} = {};
         slotsKeys.forEach((element, index) => {
-            parameters[element] = slots[element].value;
+            parameters[element] = slots[element].resolutions.resolutionsPerAuthority[0].values[0].value.name;
         });
 
         const response = await requestProcessor.processRequest(intent, parameters);
