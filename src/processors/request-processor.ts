@@ -45,10 +45,12 @@ export const processRequest = async (action: string, parameters: { attraction?: 
 
 function processWelcomeRequest() {
     const welcomeResponses = [
-        'Welcome to WDWNT! What can I look up for you?',
-        'To all who come to this happy app, welcome! What can I do for you?',
-        'My siestas are getting shorter and shorter. How can I help?',
-        'Welcome, foolish mortal, to the WDWNT app. How can I be of assistance?'
+        `No privacy at all around this place! What can I do for you?`,
+        `Oh, hello there. So glad you could come along! I am WDWNT's Cornac. How can I help?`,
+        `We are now conducting our final systems check. How can I help?`,
+        `To all who come to this happy app, welcome! What can I do for you?`,
+        `My siestas are getting shorter and shorter. How can I help?`,
+        `Welcome, foolish mortal, to the WDWNT app. How can I be of assistance?`
     ];
 
     const index = Math.floor(Math.random() * welcomeResponses.length);
